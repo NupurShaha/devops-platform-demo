@@ -1,0 +1,55 @@
+# ============================================================
+# Limit Ranges — default + maximum resource limits per container
+# Prevents any single pod from being a noisy neighbor
+# ============================================================
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: demo-limits
+  namespace: demo
+spec:
+  limits:
+    - type: Container
+      # Default limits if not specified in pod spec
+      default:
+        cpu: 200m
+        memory: 256Mi
+      # Default requests if not specified
+      defaultRequest:
+        cpu: 50m
+        memory: 64Mi
+      # Maximum any single container can request
+      max:
+        cpu: "2"
+        memory: 2Gi
+      # Minimum (prevents absurdly small containers)
+      min:
+        cpu: 10m
+        memory: 16Mi
+    - type: PersistentVolumeClaim
+      max:
+        storage: 25Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: monitoring-limits
+  namespace: monitoring
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 300m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      max:
+        cpu: "2"
+        memory: 4Gi
+      min:
+        cpu: 10m
+        memory: 16Mi
+    - type: PersistentVolumeClaim
+      max:
+        storage: 15Gi

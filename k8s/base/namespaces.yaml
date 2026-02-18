@@ -1,0 +1,43 @@
+# ============================================================
+# Namespaces — with Pod Security Standards enforcement
+# ============================================================
+# Apply first: kubectl apply -f k8s/base/namespaces.yaml
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    kubernetes.io/metadata.name: demo
+    # Restricted = strictest PSS level
+    # Pods MUST: run as non-root, drop all capabilities,
+    # no privilege escalation, use seccomp RuntimeDefault
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.28
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    kubernetes.io/metadata.name: monitoring
+    # Baseline for monitoring — Prometheus/Grafana need some
+    # host-level access for metrics collection
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.28
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    kubernetes.io/metadata.name: argocd
+    # Baseline for ArgoCD — needs service account token mounts
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce-version: v1.28
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
