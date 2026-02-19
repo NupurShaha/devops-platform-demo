@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  namespace: demo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-init
+  namespace: demo
+data:
+  init.sql: |
+    -- Create application database
+
+    -- Deployments table (for dashboard)
+    CREATE TABLE deployments (
+      id SERIAL PRIMARY KEY,
+      service_name VARCHAR(100) NOT NULL,
+      version VARCHAR(50) NOT NULL,
+      status VARCHAR(20) DEFAULT 'pending',
+      deployed_at TIMESTAMP DEFAULT NOW(),
+      commit_sha VARCHAR(40),
+      duration_seconds INTEGER
+    );
+
+    -- Events table (for activity feed)
+    CREATE TABLE events (
+      id SERIAL PRIMARY KEY,
+      event_type VARCHAR(50) NOT NULL,
+      source VARCHAR(100),
+      message TEXT,
+      severity VARCHAR(20) DEFAULT 'info',
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- Health checks table
+    CREATE TABLE health_checks (
+      id SERIAL PRIMARY KEY,
+      service_name VARCHAR(100) NOT NULL,
+      status VARCHAR(20) NOT NULL,
+      response_time_ms INTEGER,
+      checked_at TIMESTAMP DEFAULT NOW()
+    );
+
+    -- Insert seed data
+    INSERT INTO deployments (service_name, version, status, commit_sha, duration_seconds) VALUES
+      ('frontend', 'v1.0.0', 'success', 'abc1234', 45),
+      ('backend', 'v1.0.0', 'success', 'abc1234', 62),
+      ('worker', 'v1.0.0', 'success', 'abc1234', 38);
+
+    INSERT INTO events (event_type, source, message, severity) VALUES
+      ('deployment', 'github-actions', 'Deployed frontend v1.0.0', 'info'),
+      ('deployment', 'github-actions', 'Deployed backend v1.0.0', 'info'),
+      ('system', 'k3s', 'Cluster bootstrapped successfully', 'info');
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: demo
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgresql
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: POSTGRES_USER
+              value: devops
+            - name: POSTGRES_PASSWORD
+              value: devops-demo-pass
+            - name: POSTGRES_DB
+              value: devops_demo
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "devops"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "devops"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgresql-pvc
+        - name: init-scripts
+          configMap:
+            name: postgresql-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: demo
+  labels:
+    app: postgresql
+spec:
+  selector:
+    app: postgresql
+  ports:
+    - port: 5432
+      targetPort: 5432
