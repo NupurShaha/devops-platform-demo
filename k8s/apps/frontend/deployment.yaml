@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: frontend
-          image: devops-frontend:v1.2.1
+          image: devops-frontend:v1.3.1
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
