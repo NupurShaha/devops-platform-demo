@@ -1,493 +1,1520 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevOps Platform — Nupur Shah</title>
-    <style>
-        :root {
-            --bg-primary: #0f1117;
-            --bg-card: #1a1d27;
-            --bg-card-hover: #222636;
-            --border: #2a2e3d;
-            --text-primary: #e4e6f0;
-            --text-secondary: #8b8fa3;
-            --text-muted: #5c6078;
-            --accent-green: #34d399;
-            --accent-green-bg: rgba(52, 211, 153, 0.1);
-            --accent-blue: #60a5fa;
-            --accent-blue-bg: rgba(96, 165, 250, 0.1);
-            --accent-purple: #a78bfa;
-            --accent-purple-bg: rgba(167, 139, 250, 0.1);
-            --accent-orange: #fb923c;
-            --accent-orange-bg: rgba(251, 146, 60, 0.1);
-            --accent-red: #f87171;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nupur Shah — Cloud-Native DevOps Platform</title>
+  <meta name="description" content="Production-grade cloud-native DevOps platform: K3s, Terraform, ArgoCD, Prometheus, Grafana, Loki, GitHub Actions — running live at zero cost on Oracle Cloud.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══ DESIGN TOKENS ══════════════════════════════════════ */
+    :root {
+      --bg:             #F7F9FC;
+      --surface:        #FFFFFF;
+      --surface-2:      #F1F5F9;
+      --border:         #E2E8F0;
+      --border-2:       #CBD5E1;
+      --text-1:         #0F172A;
+      --text-2:         #334155;
+      --text-3:         #64748B;
+      --text-4:         #94A3B8;
 
-        /* Header */
-        header {
-            border-bottom: 1px solid var(--border);
-            padding: 20px 0;
-        }
-        .header-content {
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon {
-            width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 700; color: white;
-        }
-        .logo h1 { font-size: 18px; font-weight: 600; }
-        .logo span { color: var(--text-muted); font-size: 13px; font-weight: 400; margin-left: 8px; }
-        .header-links { display: flex; gap: 16px; }
-        .header-links a {
-            color: var(--text-secondary); text-decoration: none; font-size: 13px;
-            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-        .header-links a:hover { color: var(--text-primary); border-color: var(--text-muted); }
+      --blue:           #1D4ED8;
+      --blue-mid:       #2563EB;
+      --blue-light:     #DBEAFE;
+      --blue-xlight:    #EFF6FF;
 
-        /* Status bar */
-        .status-bar {
-            display: flex; align-items: center; gap: 8px;
-            padding: 12px 0; margin: 16px 0;
-        }
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green);
-            animation: pulse 2s infinite;
-        }
-        .status-dot.degraded { background: var(--accent-orange); }
-        .status-dot.down { background: var(--accent-red); animation: none; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .status-text { font-size: 13px; color: var(--text-secondary); }
-        .status-text strong { color: var(--accent-green); }
-        .status-text strong.degraded { color: var(--accent-orange); }
-        .status-text strong.down { color: var(--accent-red); }
+      --green:          #059669;
+      --green-light:    #D1FAE5;
+      --green-dark:     #065F46;
 
-        /* Hero */
-        .hero { padding: 40px 0 32px; }
-        .hero h2 {
-            font-size: 32px; font-weight: 700; margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .hero p { color: var(--text-secondary); font-size: 16px; max-width: 640px; }
+      --amber:          #D97706;
+      --amber-light:    #FEF3C7;
+      --amber-dark:     #78350F;
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-            margin: 24px 0;
-        }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px;
-        }
-        .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
-        .stat-detail { font-size: 12px; color: var(--text-secondary); }
+      --purple:         #7C3AED;
+      --purple-light:   #EDE9FE;
+      --purple-dark:    #4C1D95;
 
-        /* Services Grid */
-        .section-title {
-            font-size: 16px; font-weight: 600; margin: 32px 0 16px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .section-title .badge {
-            font-size: 11px; background: var(--accent-green-bg); color: var(--accent-green);
-            padding: 2px 8px; border-radius: 10px; font-weight: 500;
-        }
-        .services-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-        }
-        .service-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 16px; transition: all 0.2s;
-        }
-        .service-card:hover { background: var(--bg-card-hover); }
-        .service-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .service-name { font-size: 14px; font-weight: 600; }
-        .service-status {
-            font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
-        }
-        .service-status.healthy { background: var(--accent-green-bg); color: var(--accent-green); }
-        .service-status.degraded { background: var(--accent-orange-bg); color: var(--accent-orange); }
-        .service-status.down { background: rgba(248,113,113,0.1); color: var(--accent-red); }
-        .service-detail { font-size: 12px; color: var(--text-muted); }
+      --red:            #DC2626;
+      --red-light:      #FEE2E2;
 
-        /* Tech Stack */
-        .tech-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-            margin: 16px 0 40px;
-        }
-        .tech-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 16px;
-        }
-        .tech-category {
-            font-size: 11px; color: var(--text-muted); text-transform: uppercase;
-            letter-spacing: 0.5px; margin-bottom: 8px;
-        }
-        .tech-items { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tech-tag {
-            font-size: 12px; padding: 3px 8px; border-radius: 4px;
-            border: 1px solid var(--border); color: var(--text-secondary);
-        }
+      --navy:           #0F172A;
 
-        /* Deployments table */
-        .deployments-table {
-            width: 100%; border-collapse: collapse; margin: 8px 0 40px;
-        }
-        .deployments-table th {
-            text-align: left; font-size: 11px; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        .deployments-table td {
-            font-size: 13px; padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        .deploy-status {
-            font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
-        }
-        .deploy-status.success { background: var(--accent-green-bg); color: var(--accent-green); }
-        .deploy-status.failed { background: rgba(248,113,113,0.1); color: var(--accent-red); }
-        .commit-sha { font-family: monospace; color: var(--accent-blue); font-size: 12px; }
+      --font-display:  'Syne', sans-serif;
+      --font-body:     'DM Sans', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
 
-        /* Architecture section */
-        .arch-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 24px; margin: 16px 0 40px;
-        }
-        .arch-flow {
-            display: flex; align-items: center; justify-content: center;
-            gap: 8px; flex-wrap: wrap; padding: 16px 0;
-        }
-        .arch-node {
-            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-            white-space: nowrap;
-        }
-        .arch-arrow { color: var(--text-muted); font-size: 18px; }
-        .arch-internet { background: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid rgba(96,165,250,0.3); }
-        .arch-cdn { background: var(--accent-orange-bg); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.3); }
-        .arch-ingress { background: var(--accent-purple-bg); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.3); }
-        .arch-app { background: var(--accent-green-bg); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.3); }
-        .arch-data { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+      --r:    8px;
+      --r-md: 12px;
+      --r-lg: 16px;
 
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border); padding: 24px 0;
-            text-align: center; color: var(--text-muted); font-size: 13px;
-        }
-        footer a { color: var(--accent-blue); text-decoration: none; }
+      --shadow-sm: 0 1px 2px rgba(15,23,42,0.06);
+      --shadow:    0 1px 4px rgba(15,23,42,0.07), 0 4px 12px rgba(15,23,42,0.05);
+      --shadow-md: 0 4px 16px rgba(15,23,42,0.09), 0 1px 4px rgba(15,23,42,0.04);
+      --shadow-lg: 0 8px 40px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.05);
+    }
 
-        /* Loading */
-        .loading { color: var(--text-muted); font-style: italic; }
+    /* ══ RESET ══════════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+    img, svg { display: block; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .services-grid { grid-template-columns: 1fr; }
-            .tech-grid { grid-template-columns: repeat(2, 1fr); }
-            .hero h2 { font-size: 24px; }
-            .header-content { flex-direction: column; gap: 12px; }
-        }
-    </style>
+    /* ══ LAYOUT UTILITIES ════════════════════════════════════ */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 28px; }
+    .section { padding: 88px 0; }
+    .section-alt { background: var(--surface); }
+
+    /* ══ NAV ════════════════════════════════════════════════ */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(247,249,252,0.88);
+      backdrop-filter: blur(14px) saturate(1.6);
+      -webkit-backdrop-filter: blur(14px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 62px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: var(--navy);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-family: var(--font-display);
+      font-size: 16px; font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-name {
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 15px;
+      color: var(--text-1);
+    }
+    .brand-slash { color: var(--text-4); margin: 0 1px; font-weight: 300; }
+    .brand-role { font-size: 13px; color: var(--text-3); font-weight: 400; }
+
+    .nav-center {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 13px; border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      background: var(--green-light);
+      color: var(--green-dark);
+      border: 1px solid rgba(5,150,105,0.18);
+      transition: all 0.3s;
+    }
+    .status-pill.degraded { background: var(--amber-light); color: var(--amber-dark); border-color: rgba(217,119,6,0.18); }
+    .status-pill.down { background: var(--red-light); color: #7F1D1D; border-color: rgba(220,38,38,0.18); }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    .status-pill.degraded .status-dot { background: var(--amber); animation: none; }
+    .status-pill.down .status-dot { background: var(--red); animation: none; }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-link {
+      font-size: 13px; font-weight: 500;
+      color: var(--text-3); padding: 6px 11px;
+      border-radius: var(--r); transition: all 0.14s;
+    }
+    .nav-link:hover { color: var(--text-1); background: var(--surface-2); }
+    .nav-link.cta {
+      background: var(--navy); color: white;
+      padding: 6px 14px; margin-left: 6px;
+    }
+    .nav-link.cta:hover { background: var(--blue); }
+
+    /* ══ HERO ═══════════════════════════════════════════════ */
+    .hero-section {
+      padding: 80px 0 72px;
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 72px;
+      align-items: center;
+      min-height: calc(100svh - 62px);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-mid);
+      background: var(--blue-xlight);
+      border: 1px solid rgba(37,99,235,0.18);
+      padding: 5px 12px; border-radius: 999px;
+      margin-bottom: 22px;
+    }
+    .hero-eyebrow svg { width: 12px; height: 12px; }
+
+    .hero-h1 {
+      font-family: var(--font-display);
+      font-size: clamp(38px, 4.2vw, 58px);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      color: var(--text-1);
+      margin-bottom: 22px;
+    }
+    .hero-h1 .accent { color: var(--blue-mid); }
+    .hero-h1 .word-wrap { display: block; }
+
+    .hero-desc {
+      font-size: 17px;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 460px;
+      margin-bottom: 34px;
+    }
+
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 13px; border-radius: 999px;
+      border: 1px solid var(--border-2);
+      background: var(--surface);
+      font-size: 13px; font-weight: 500; color: var(--text-2);
+      box-shadow: var(--shadow-sm);
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .pill-dot.g { background: var(--green); }
+    .pill-dot.b { background: var(--blue-mid); }
+    .pill-dot.a { background: var(--amber); }
+    .pill-dot.p { background: var(--purple); }
+
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      padding: 11px 22px; border-radius: var(--r);
+      transition: all 0.16s; cursor: pointer; border: none;
+    }
+    .btn svg { width: 15px; height: 15px; }
+    .btn-solid { background: var(--navy); color: white; }
+    .btn-solid:hover { background: var(--blue); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-ghost { background: var(--surface); color: var(--text-1); border: 1px solid var(--border-2); }
+    .btn-ghost:hover { background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    /* ══ ARCHITECTURE SVG DIAGRAM ════════════════════════════ */
+    .diagram-wrap {
+      position: relative;
+    }
+    .diagram-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    .diagram-card::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 15% 85%, rgba(37,99,235,0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 85% 15%, rgba(124,58,237,0.05) 0%, transparent 70%);
+    }
+    .diagram-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .diagram-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--text-4);
+    }
+    .diagram-live {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; color: var(--green);
+    }
+    .diagram-live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      animation: blink 2s ease-in-out infinite;
+    }
+    .arch-svg { width: 100%; height: auto; }
+
+    /* SVG animation styles */
+    .flow-traffic { animation: dash-flow-b 1.8s linear infinite; }
+    .flow-gitops  { animation: dash-flow-a 2.2s linear infinite; }
+    .flow-metrics { animation: dash-flow-p 2.8s linear infinite; }
+    @keyframes dash-flow-b {
+      to { stroke-dashoffset: -16; }
+    }
+    @keyframes dash-flow-a {
+      to { stroke-dashoffset: -16; }
+    }
+    @keyframes dash-flow-p {
+      to { stroke-dashoffset: -14; }
+    }
+
+    .node-pulse { animation: node-glow 3s ease-in-out infinite; }
+    @keyframes node-glow {
+      0%, 100% { filter: drop-shadow(0 0 0px rgba(37,99,235,0)); }
+      50% { filter: drop-shadow(0 0 5px rgba(37,99,235,0.25)); }
+    }
+
+    /* ══ METRICS STRIP ═══════════════════════════════════════ */
+    .metrics-strip {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .metric-cell {
+      padding: 32px 28px;
+      border-right: 1px solid var(--border);
+    }
+    .metric-cell:last-child { border-right: none; }
+    .metric-num {
+      font-family: var(--font-display);
+      font-size: 42px; font-weight: 800;
+      line-height: 1; color: var(--text-1);
+      margin-bottom: 4px;
+    }
+    .metric-num .unit { font-size: 22px; font-weight: 700; color: var(--text-3); }
+    .metric-label { font-size: 13px; color: var(--text-3); font-weight: 500; }
+    .metric-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px; margin-top: 6px;
+    }
+    .metric-tag.green { background: var(--green-light); color: var(--green-dark); }
+    .metric-tag.blue  { background: var(--blue-light); color: var(--blue); }
+    .metric-tag.purple { background: var(--purple-light); color: var(--purple-dark); }
+    .metric-tag.amber { background: var(--amber-light); color: var(--amber-dark); }
+
+    /* ══ SECTION HEADERS ═════════════════════════════════════ */
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--blue-mid);
+      margin-bottom: 8px;
+    }
+    .section-h2 {
+      font-family: var(--font-display);
+      font-size: 30px; font-weight: 800;
+      letter-spacing: -0.02em; line-height: 1.15;
+      color: var(--text-1); margin-bottom: 8px;
+    }
+    .section-sub { font-size: 15px; color: var(--text-3); max-width: 520px; }
+    .section-head { margin-bottom: 44px; }
+
+    /* ══ HEALTH CARDS ════════════════════════════════════════ */
+    .health-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    }
+    .health-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 22px;
+      transition: box-shadow 0.16s, transform 0.16s;
+    }
+    .health-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+    .hc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .hc-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px;
+      background: var(--surface-2); border: 1px solid var(--border);
+    }
+    .hc-name { font-size: 15px; font-weight: 600; color: var(--text-1); margin-top: 12px; }
+    .hc-desc { font-size: 12px; color: var(--text-3); margin-top: 3px; line-height: 1.4; }
+    .hc-foot { 
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px; color: var(--text-4);
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 999px;
+    }
+    .badge svg { width: 10px; height: 10px; }
+    .badge.healthy  { background: var(--green-light); color: var(--green-dark); }
+    .badge.degraded { background: var(--amber-light); color: var(--amber-dark); }
+    .badge.down, .badge.unhealthy { background: var(--red-light); color: #7F1D1D; }
+    .badge.unavailable { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+    .badge.loading { background: var(--surface-2); color: var(--text-4); }
+
+    /* ══ GITOPS PIPELINE ═════════════════════════════════════ */
+    .pipeline-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 44px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .pipeline-wrap::after {
+      content: '';
+      position: absolute; left: 0; right: 0; top: 0; height: 3px;
+      background: linear-gradient(90deg, var(--blue-mid), var(--purple), var(--amber));
+    }
+    .pipeline-subtitle {
+      font-size: 14px; color: var(--text-3); margin-bottom: 40px;
+    }
+
+    .pipeline-row {
+      display: flex; align-items: center;
+      gap: 0; overflow-x: auto; padding-bottom: 4px;
+    }
+    .pipe-step {
+      flex: 0 0 auto;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      min-width: 108px;
+    }
+    .pipe-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .pipe-icon.active {
+      background: var(--navy); border-color: var(--navy);
+      color: white;
+    }
+    .pipe-icon.green  { background: var(--green-light);  border-color: rgba(5,150,105,0.3); }
+    .pipe-icon.blue   { background: var(--blue-xlight);  border-color: rgba(37,99,235,0.25); }
+    .pipe-icon.amber  { background: var(--amber-light);  border-color: rgba(217,119,6,0.25); }
+    .pipe-icon.purple { background: var(--purple-light); border-color: rgba(124,58,237,0.25); }
+
+    .pipe-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .pipe-detail { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+    .pipe-arrow {
+      flex: 1; min-width: 28px; height: 2px;
+      background: var(--border);
+      position: relative; margin-bottom: 36px;
+      overflow: hidden;
+    }
+    .pipe-arrow::after {
+      content: '';
+      position: absolute; top: 0; left: -80%;
+      width: 70%; height: 100%;
+      background: linear-gradient(90deg, transparent, var(--blue-mid) 50%, transparent);
+      animation: pipe-sweep 2s ease-in-out infinite;
+    }
+    .pipe-arrow:nth-child(2)::after  { animation-delay: 0s; }
+    .pipe-arrow:nth-child(4)::after  { animation-delay: 0.35s; }
+    .pipe-arrow:nth-child(6)::after  { animation-delay: 0.7s; }
+    .pipe-arrow:nth-child(8)::after  { animation-delay: 1.05s; }
+    .pipe-arrow:nth-child(10)::after { animation-delay: 1.4s; }
+    @keyframes pipe-sweep {
+      0%   { left: -80%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { left: 110%; opacity: 0; }
+    }
+
+    .pipeline-return {
+      margin-top: 36px; padding-top: 28px;
+      border-top: 1px dashed var(--border);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: var(--text-3);
+      flex-wrap: wrap;
+    }
+    .ret-label {
+      font-size: 12px; font-weight: 600; color: var(--text-3);
+      padding: 4px 10px; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 6px;
+      white-space: nowrap;
+    }
+    .ret-dash {
+      flex: 1; height: 1px; min-width: 20px;
+      background: repeating-linear-gradient(90deg,
+        var(--border) 0px, var(--border) 6px,
+        transparent 6px, transparent 12px);
+      position: relative; overflow: hidden;
+    }
+    .ret-dash::after {
+      content: '';
+      position: absolute; top: 0; left: -100%; height: 1px; width: 50%;
+      background: linear-gradient(90deg, transparent, var(--amber), transparent);
+      animation: ret-sweep 2.5s ease-in-out infinite;
+    }
+    .ret-dash:nth-child(4)::after { animation-delay: 0.8s; }
+    @keyframes ret-sweep {
+      0% { left: -50%; }
+      100% { left: 120%; }
+    }
+    .ret-arrow { color: var(--amber); font-weight: 700; font-size: 15px; }
+
+    /* ══ DEPLOYMENTS ═════════════════════════════════════════ */
+    .deploy-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .deploy-head {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 0.7fr 1fr 0.6fr 0.8fr;
+      padding: 12px 20px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--text-4);
+    }
+    .deploy-row {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 0.7fr 1fr 0.6fr 0.8fr;
+      padding: 16px 20px; font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+      align-items: center;
+    }
+    .deploy-row:last-child { border-bottom: none; }
+    .deploy-row:hover { background: var(--surface-2); }
+    .deploy-service { font-weight: 600; color: var(--text-1); }
+    .deploy-version { color: var(--text-3); font-family: var(--font-mono); font-size: 12px; }
+    .deploy-sha {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--blue-mid); background: var(--blue-xlight);
+      padding: 2px 7px; border-radius: 5px; display: inline-block;
+    }
+    .deploy-time { color: var(--text-4); font-size: 12px; }
+    .deploy-dur { font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
+    .deploy-empty { padding: 40px 20px; text-align: center; color: var(--text-4); font-size: 14px; }
+
+    /* ══ COST SECTION ════════════════════════════════════════ */
+    .cost-section {
+      background: var(--navy);
+      color: white;
+    }
+    .cost-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .cost-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      margin-bottom: 10px;
+    }
+    .cost-h2 {
+      font-family: var(--font-display);
+      font-size: 38px; font-weight: 800; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 18px;
+    }
+    .cost-zero { color: #34D399; }
+    .cost-desc { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+    .cost-talking-point {
+      margin-top: 28px; padding: 18px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      font-size: 13px; color: rgba(255,255,255,0.7);
+      font-style: italic;
+      line-height: 1.6;
+    }
+    .cost-talking-point strong { color: white; font-style: normal; }
+    .cost-table {
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; overflow: hidden;
+      background: rgba(255,255,255,0.03);
+    }
+    .cost-row {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 16px; padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-size: 13px; align-items: center;
+    }
+    .cost-row:last-child { border-bottom: none; background: rgba(255,255,255,0.05); }
+    .cost-item { color: rgba(255,255,255,0.65); }
+    .cost-aws { font-family: var(--font-mono); color: rgba(255,255,255,0.35); text-decoration: line-through; font-size: 12px; }
+    .cost-ours { font-family: var(--font-mono); color: #34D399; font-weight: 600; }
+    .cost-row.total .cost-item { color: white; font-weight: 600; }
+    .cost-row.total .cost-aws { font-size: 13px; }
+    .cost-row.total .cost-ours { font-size: 16px; }
+
+    /* ══ TECH STACK ══════════════════════════════════════════ */
+    .stack-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-top: 44px;
+    }
+    .stack-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 24px;
+      transition: all 0.16s;
+    }
+    .stack-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .stack-cat {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+    .stack-cat.infra  { color: var(--blue-mid); }
+    .stack-cat.k8s    { color: var(--green); }
+    .stack-cat.obs    { color: var(--purple); }
+    .stack-cat.cicd   { color: var(--amber); }
+    .stack-cat.sec    { color: var(--red); }
+    .stack-cat.data   { color: #0891B2; }
+
+    .stack-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .stack-tag {
+      font-size: 12px; font-weight: 500;
+      padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg); color: var(--text-2);
+      transition: all 0.14s;
+    }
+    .stack-tag:hover { border-color: var(--border-2); background: var(--surface-2); }
+    .stack-proof {
+      font-size: 11px; color: var(--text-3); line-height: 1.55;
+    }
+
+    /* ══ FOOTER ══════════════════════════════════════════════ */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+    }
+    .footer-wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-left { }
+    .footer-name { font-weight: 600; font-size: 14px; color: var(--text-1); }
+    .footer-tagline { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-link {
+      font-size: 13px; color: var(--text-3);
+      transition: color 0.14s;
+    }
+    .footer-link:hover { color: var(--text-1); }
+
+    /* ══ ENTRY ANIMATIONS ════════════════════════════════════ */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fade-up 0.55s ease both; }
+    .delay-1 { animation-delay: 0.08s; }
+    .delay-2 { animation-delay: 0.16s; }
+    .delay-3 { animation-delay: 0.24s; }
+    .delay-4 { animation-delay: 0.32s; }
+    .delay-5 { animation-delay: 0.40s; }
+
+    /* ══ RESPONSIVE ══════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .stack-grid { grid-template-columns: repeat(2, 1fr); }
+      .health-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .hero-section { grid-template-columns: 1fr; gap: 40px; min-height: auto; padding: 48px 0; }
+      .diagram-wrap { display: none; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric-cell { border-right: none; border-bottom: 1px solid var(--border); }
+      .health-grid { grid-template-columns: 1fr; }
+      .deploy-head, .deploy-row { grid-template-columns: 1.2fr 0.6fr 0.7fr; }
+      .deploy-head > *:nth-child(n+4),
+      .deploy-row > *:nth-child(n+4) { display: none; }
+      .cost-grid { grid-template-columns: 1fr; gap: 40px; }
+      .stack-grid { grid-template-columns: 1fr 1fr; }
+      .nav-center, .nav-links .nav-link:not(.cta) { display: none; }
+      .pipe-detail { display: none; }
+    }
+    @media (max-width: 480px) {
+      .stack-grid { grid-template-columns: 1fr; }
+      .hero-pills { gap: 6px; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="container header-content">
-            <div class="logo">
-                <div class="logo-icon">N</div>
-                <h1>DevOps Platform <span>by Nupur Shah</span></h1>
-            </div>
-            <div class="header-links">
-                <a href="/grafana" target="_blank">📊 Grafana</a>
-                <a href="/argocd" target="_blank">🔄 ArgoCD</a>
-                <a href="/api/docs" target="_blank">📄 API Docs</a>
-                <a href="https://github.com/NupurShaha/devops-platform-demo" target="_blank">⌨ GitHub</a>
-            </div>
-        </div>
-    </header>
 
-    <div class="container">
-        <div class="status-bar">
-            <div class="status-dot" id="statusDot"></div>
-            <div class="status-text" id="statusText">Checking platform status...</div>
-        </div>
+<!-- ══ NAV ══════════════════════════════════════════════════ -->
+<nav>
+  <div class="container nav-wrap">
+    <a href="/" class="nav-brand">
+      <div class="brand-mark">N</div>
+      <div>
+        <div class="brand-name">Nupur Shah <span class="brand-slash">/</span> <span class="brand-role">DevOps Platform</span></div>
+      </div>
+    </a>
+    <div class="nav-center">
+      <div class="status-pill" id="navStatus">
+        <div class="status-dot"></div>
+        <span id="navStatusText">All systems operational</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="/grafana" target="_blank" class="nav-link">Grafana</a>
+      <a href="/argocd" target="_blank" class="nav-link">ArgoCD</a>
+      <a href="/api/docs" target="_blank" class="nav-link">API Docs</a>
+      <a href="https://github.com/NupurShaha/devops-platform-demo" target="_blank" class="nav-link cta">
+        GitHub →
+      </a>
+    </nav>
+  </div>
+</nav>
 
-        <div class="hero">
-            <h2>Production-Grade Cloud-Native Platform</h2>
-            <p>A live, fully automated DevOps platform running on Oracle Cloud with Kubernetes, GitOps, and full observability. Built to demonstrate real-world infrastructure engineering.</p>
-        </div>
 
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-                <div class="stat-label">Total Deployments</div>
-                <div class="stat-value" id="statDeploys">—</div>
-                <div class="stat-detail" id="statDeploysDetail">loading...</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Services Running</div>
-                <div class="stat-value" id="statServices">—</div>
-                <div class="stat-detail">microservices architecture</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Avg Deploy Time</div>
-                <div class="stat-value" id="statAvgDeploy">—</div>
-                <div class="stat-detail">seconds per deployment</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Platform Uptime</div>
-                <div class="stat-value" id="statUptime">—</div>
-                <div class="stat-detail" id="statUptimeDetail">since last restart</div>
-            </div>
-        </div>
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<div class="container">
+  <div class="hero-section">
 
-        <div class="section-title">Service Health <span class="badge" id="healthBadge">checking...</span></div>
-        <div class="services-grid" id="servicesGrid">
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">Backend API</span>
-                    <span class="service-status" id="svcBackend">...</span>
-                </div>
-                <div class="service-detail">FastAPI · Python 3.11 · REST + Prometheus metrics</div>
-            </div>
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">PostgreSQL</span>
-                    <span class="service-status" id="svcPostgres">...</span>
-                </div>
-                <div class="service-detail">v15 · Persistent storage · Schema migrations</div>
-            </div>
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">Redis</span>
-                    <span class="service-status" id="svcRedis">...</span>
-                </div>
-                <div class="service-detail">v7 · LRU cache · API response caching</div>
-            </div>
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">RabbitMQ</span>
-                    <span class="service-status" id="svcRabbit">...</span>
-                </div>
-                <div class="service-detail">v3.12 · Async task queue · Event processing</div>
-            </div>
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">Worker</span>
-                    <span class="service-status" id="svcWorker">...</span>
-                </div>
-                <div class="service-detail">Python · RabbitMQ consumer · Event-driven</div>
-            </div>
-            <div class="service-card">
-                <div class="service-header">
-                    <span class="service-name">Traefik Ingress</span>
-                    <span class="service-status healthy">healthy</span>
-                </div>
-                <div class="service-detail">Edge router · TLS termination · Let's Encrypt</div>
-            </div>
-        </div>
-
-        <div class="section-title">Recent Deployments</div>
-        <table class="deployments-table">
-            <thead>
-                <tr>
-                    <th>Service</th>
-                    <th>Version</th>
-                    <th>Status</th>
-                    <th>Commit</th>
-                    <th>Duration</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody id="deploymentsBody">
-                <tr><td colspan="6" class="loading">Loading deployments...</td></tr>
-            </tbody>
-        </table>
-
-        <div class="section-title">Architecture</div>
-        <div class="arch-card">
-            <div class="arch-flow">
-                <span class="arch-node arch-internet">Internet</span>
-                <span class="arch-arrow">→</span>
-                <span class="arch-node arch-cdn">Cloudflare CDN</span>
-                <span class="arch-arrow">→</span>
-                <span class="arch-node arch-ingress">Traefik + TLS</span>
-                <span class="arch-arrow">→</span>
-                <span class="arch-node arch-app">FastAPI / Frontend</span>
-                <span class="arch-arrow">→</span>
-                <span class="arch-node arch-data">PostgreSQL · Redis · RabbitMQ</span>
-            </div>
-            <div class="arch-flow" style="margin-top: 12px;">
-                <span class="arch-node arch-ingress">ArgoCD</span>
-                <span class="arch-arrow">←</span>
-                <span class="arch-node arch-internet">GitHub</span>
-                <span class="arch-arrow" style="margin: 0 24px;">|</span>
-                <span class="arch-node arch-cdn">Prometheus</span>
-                <span class="arch-arrow">→</span>
-                <span class="arch-node arch-app">Grafana</span>
-                <span class="arch-arrow">←</span>
-                <span class="arch-node arch-data">Loki + Promtail</span>
-            </div>
-        </div>
-
-        <div class="section-title">Tech Stack</div>
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="tech-category">Infrastructure</div>
-                <div class="tech-items">
-                    <span class="tech-tag">Oracle Cloud</span>
-                    <span class="tech-tag">Terraform</span>
-                    <span class="tech-tag">ARM64 / Graviton</span>
-                </div>
-            </div>
-            <div class="tech-card">
-                <div class="tech-category">Orchestration</div>
-                <div class="tech-items">
-                    <span class="tech-tag">K3s</span>
-                    <span class="tech-tag">Helm</span>
-                    <span class="tech-tag">Traefik</span>
-                    <span class="tech-tag">Cert-Manager</span>
-                </div>
-            </div>
-            <div class="tech-card">
-                <div class="tech-category">Observability</div>
-                <div class="tech-items">
-                    <span class="tech-tag">Prometheus</span>
-                    <span class="tech-tag">Grafana</span>
-                    <span class="tech-tag">Loki</span>
-                    <span class="tech-tag">Promtail</span>
-                </div>
-            </div>
-            <div class="tech-card">
-                <div class="tech-category">GitOps & CI/CD</div>
-                <div class="tech-items">
-                    <span class="tech-tag">ArgoCD</span>
-                    <span class="tech-tag">GitHub Actions</span>
-                    <span class="tech-tag">Sealed Secrets</span>
-                </div>
-            </div>
-        </div>
+    <!-- Left: Text -->
+    <div class="hero-text">
+      <div class="hero-eyebrow fade-up">
+        <svg viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="5.5" stroke="currentColor" stroke-width="1"/>
+          <circle cx="6" cy="6" r="2" fill="currentColor"/>
+        </svg>
+        Live Production Platform · Oracle Cloud
+      </div>
+      <h1 class="hero-h1 fade-up delay-1">
+        <span class="word-wrap">Cloud-Native</span>
+        <span class="word-wrap"><span class="accent">DevOps</span></span>
+        <span class="word-wrap">Platform</span>
+      </h1>
+      <p class="hero-desc fade-up delay-2">
+        A fully-automated, production-grade Kubernetes platform running 24/7 on Oracle Cloud. Real GitOps, real observability, real CI/CD — engineered to mirror what top tech companies run in production.
+      </p>
+      <div class="hero-pills fade-up delay-3">
+        <div class="hero-pill"><span class="pill-dot g"></span>K3s + Kubernetes</div>
+        <div class="hero-pill"><span class="pill-dot b"></span>ArgoCD GitOps</div>
+        <div class="hero-pill"><span class="pill-dot p"></span>Prometheus + Grafana + Loki</div>
+        <div class="hero-pill"><span class="pill-dot a"></span>GitHub Actions CI/CD</div>
+        <div class="hero-pill"><span class="pill-dot b"></span>Terraform IaC</div>
+        <div class="hero-pill"><span class="pill-dot g"></span>$0 / month</div>
+      </div>
+      <div class="hero-actions fade-up delay-4">
+        <a href="/grafana" target="_blank" class="btn btn-solid">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+          </svg>
+          Live Grafana Dashboard
+        </a>
+        <a href="/api/docs" target="_blank" class="btn btn-ghost">
+          API Docs →
+        </a>
+        <a href="https://github.com/NupurShaha/devops-platform-demo" target="_blank" class="btn btn-ghost">
+          View Source →
+        </a>
+      </div>
     </div>
 
-    <footer>
-        <div class="container">
-            Built by <a href="https://github.com/NupurShaha" target="_blank">Nupur Shah</a> ·
-            DevOps Engineer & Cloud Architect ·
-            <a href="https://github.com/NupurShaha/devops-platform-demo" target="_blank">View Source</a>
+    <!-- Right: Architecture Diagram -->
+    <div class="diagram-wrap fade-up delay-3">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <span class="diagram-title">Live System Architecture</span>
+          <span class="diagram-live">
+            <span class="diagram-live-dot"></span> Real-time
+          </span>
         </div>
-    </footer>
 
-    <script>
-        const API = '/api';
+        <!-- ══ ARCHITECTURE SVG ══════════════════════════════ -->
+        <svg class="arch-svg" viewBox="0 0 520 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Arrow markers -->
+            <marker id="arr-blue"   markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#2563EB"/>
+            </marker>
+            <marker id="arr-amber"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#D97706"/>
+            </marker>
+            <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#7C3AED"/>
+            </marker>
+            <marker id="arr-green"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#059669"/>
+            </marker>
+            <marker id="arr-slate"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#94A3B8"/>
+            </marker>
 
-        function setStatus(el, status) {
-            el.className = 'service-status ' + (status === 'healthy' ? 'healthy' : status === 'degraded' ? 'degraded' : 'down');
-            el.textContent = status === 'healthy' ? 'healthy' : status === 'degraded' ? 'degraded' : 'down';
-        }
+            <!-- Gradients -->
+            <linearGradient id="grad-cluster" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#F8FAFC"/>
+              <stop offset="100%" stop-color="#F1F5F9"/>
+            </linearGradient>
+          </defs>
 
-        function timeAgo(dateStr) {
-            const diff = Date.now() - new Date(dateStr).getTime();
-            const mins = Math.floor(diff / 60000);
-            if (mins < 60) return mins + 'm ago';
-            const hours = Math.floor(mins / 60);
-            if (hours < 24) return hours + 'h ago';
-            return Math.floor(hours / 24) + 'd ago';
-        }
+          <!-- ── EXTERNAL: Internet + Cloudflare (top-left) ── -->
+          <!-- Internet -->
+          <rect x="4" y="6" width="88" height="32" rx="7" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+          <text x="48" y="18" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#1D4ED8" text-anchor="middle">🌐 Internet</text>
+          <text x="48" y="30" font-family="DM Sans,sans-serif" font-size="7" fill="#60A5FA" text-anchor="middle">Public Traffic</text>
 
-        async function loadHealth() {
-            try {
-                const res = await fetch(API + '/health');
-                const data = await res.json();
+          <!-- Arrow Internet → Cloudflare -->
+          <path d="M92,22 L122,22" stroke="#2563EB" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-blue)"
+            class="flow-traffic"/>
 
-                const dot = document.getElementById('statusDot');
-                const text = document.getElementById('statusText');
-                const badge = document.getElementById('healthBadge');
+          <!-- Cloudflare -->
+          <rect x="122" y="6" width="108" height="32" rx="7" fill="#FEF3C7" stroke="#FDE68A" stroke-width="1"/>
+          <text x="176" y="18" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#92400E" text-anchor="middle">☁ Cloudflare</text>
+          <text x="176" y="30" font-family="DM Sans,sans-serif" font-size="7" fill="#D97706" text-anchor="middle">DDoS · WAF · CDN · TLS</text>
 
-                if (data.status === 'healthy') {
-                    dot.className = 'status-dot';
-                    text.innerHTML = 'All systems <strong>operational</strong>';
-                    badge.textContent = 'all healthy';
-                } else {
-                    dot.className = 'status-dot degraded';
-                    text.innerHTML = 'Platform <strong class="degraded">degraded</strong>';
-                    badge.textContent = 'degraded';
-                    badge.style.background = 'var(--accent-orange-bg)';
-                    badge.style.color = 'var(--accent-orange)';
-                }
+          <!-- Arrow Cloudflare → (bends down into cluster at Traefik) -->
+          <path d="M230,22 L300,22" stroke="#2563EB" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-blue)"
+            class="flow-traffic"/>
 
-                setStatus(document.getElementById('svcBackend'), data.checks.api || 'down');
-                setStatus(document.getElementById('svcPostgres'), data.checks.postgresql || 'down');
-                setStatus(document.getElementById('svcRedis'), data.checks.redis || 'down');
-                setStatus(document.getElementById('svcRabbit'), 'healthy');
-                setStatus(document.getElementById('svcWorker'), 'healthy');
-            } catch (e) {
-                document.getElementById('statusDot').className = 'status-dot down';
-                document.getElementById('statusText').innerHTML = 'Platform <strong class="down">unreachable</strong>';
-            }
-        }
+          <!-- Traefik (right of Cloudflare, still in external zone) -->
+          <rect x="300" y="6" width="110" height="32" rx="7" fill="#EDE9FE" stroke="#C4B5FD" stroke-width="1"/>
+          <text x="355" y="18" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#4C1D95" text-anchor="middle">⚙ Traefik</text>
+          <text x="355" y="30" font-family="DM Sans,sans-serif" font-size="7" fill="#7C3AED" text-anchor="middle">Ingress · Let's Encrypt TLS</text>
 
-        async function loadStats() {
-            try {
-                const res = await fetch(API + '/stats');
-                const data = await res.json();
+          <!-- Arrow Traefik → K8s cluster (down into demo ns) -->
+          <path d="M355,38 L355,56 L185,56 L185,98"
+            stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3"
+            marker-end="url(#arr-blue)" class="flow-traffic"/>
 
-                document.getElementById('statDeploys').textContent = data.total_deployments;
-                document.getElementById('statDeploysDetail').textContent =
-                    data.successful_deployments + ' successful';
-                document.getElementById('statServices').textContent = data.services_count;
-                document.getElementById('statAvgDeploy').textContent =
-                    data.avg_deploy_duration_seconds + 's';
+          <!-- ── K3S CLUSTER OUTER BOX ── -->
+          <rect x="4" y="52" width="510" height="384" rx="12"
+            fill="url(#grad-cluster)" stroke="#CBD5E1" stroke-width="1.5"/>
+          <text x="16" y="70" font-family="DM Sans,sans-serif" font-size="8" font-weight="700"
+            fill="#94A3B8" letter-spacing="0.08em">K3S CLUSTER · ORACLE CLOUD ARM64 · ALWAYS FREE</text>
 
-                const h = Math.floor(data.uptime_seconds / 3600);
-                const m = Math.floor((data.uptime_seconds % 3600) / 60);
-                document.getElementById('statUptime').textContent =
-                    h > 0 ? h + 'h ' + m + 'm' : m + 'm';
-            } catch (e) { }
-        }
+          <!-- ── DEMO NAMESPACE ── -->
+          <rect x="14" y="76" width="330" height="200" rx="8"
+            fill="rgba(209,250,229,0.35)" stroke="#059669" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <text x="22" y="92" font-family="DM Sans,sans-serif" font-size="8" font-weight="700"
+            fill="#065F46" letter-spacing="0.07em">demo namespace</text>
 
-        async function loadDeployments() {
-            try {
-                const res = await fetch(API + '/deployments');
-                const data = await res.json();
-                const tbody = document.getElementById('deploymentsBody');
+          <!-- Frontend node -->
+          <rect x="22" y="98" width="88" height="30" rx="6" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="66" y="111" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Frontend</text>
+          <text x="66" y="122" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">React · nginx · 2 replicas</text>
 
-                tbody.innerHTML = data.map(d => `
-                    <tr>
-                        <td><strong>${d.service_name}</strong></td>
-                        <td>${d.version}</td>
-                        <td><span class="deploy-status ${d.status}">${d.status}</span></td>
-                        <td><span class="commit-sha">${d.commit_sha || '—'}</span></td>
-                        <td>${d.duration_seconds}s</td>
-                        <td style="color: var(--text-muted)">${timeAgo(d.deployed_at)}</td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                document.getElementById('deploymentsBody').innerHTML =
-                    '<tr><td colspan="6" class="loading">Could not load deployments</td></tr>';
-            }
-        }
+          <!-- Backend node -->
+          <rect x="126" y="98" width="98" height="30" rx="6" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="175" y="111" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Backend API</text>
+          <text x="175" y="122" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">FastAPI · Python · 3 replicas</text>
 
-        // Initial load
-        loadHealth();
-        loadStats();
-        loadDeployments();
+          <!-- Worker node -->
+          <rect x="240" y="98" width="80" height="30" rx="6" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="280" y="111" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Worker</text>
+          <text x="280" y="122" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">Event-driven consumer</text>
 
-        // Auto-refresh every 30s
-        setInterval(() => { loadHealth(); loadStats(); }, 30000);
-    </script>
+          <!-- Arrows: Traefik routes into services -->
+          <!-- Already handled by the path coming in at x=185, y=98 — that hits Backend area -->
+          <!-- Additional route: to Frontend -->
+          <path d="M155,56 L66,56 L66,98" stroke="#2563EB" stroke-width="1" stroke-dasharray="3 2" opacity="0.5" marker-end="url(#arr-blue)"/>
+
+          <!-- Service connections (internal) -->
+          <!-- Frontend → Backend API -->
+          <path d="M110,113 L126,113" stroke="#94A3B8" stroke-width="1"
+            stroke-dasharray="3 2" marker-end="url(#arr-slate)"/>
+
+          <!-- Backend → Worker (via RabbitMQ — shown differently) -->
+          <!-- Shown below with RabbitMQ connection -->
+
+          <!-- ── DATA TIER ── -->
+          <text x="22" y="152" font-family="DM Sans,sans-serif" font-size="7" font-weight="600"
+            fill="#94A3B8" letter-spacing="0.06em">DATA TIER</text>
+
+          <!-- PostgreSQL -->
+          <rect x="22" y="158" width="90" height="28" rx="6"
+            fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+          <text x="67" y="170" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#1E40AF" text-anchor="middle">PostgreSQL</text>
+          <text x="67" y="180" font-family="DM Sans,sans-serif" font-size="7" fill="#60A5FA" text-anchor="middle">v15 · StatefulSet</text>
+
+          <!-- Redis -->
+          <rect x="126" y="158" width="72" height="28" rx="6"
+            fill="#FEF2F2" stroke="#FECACA" stroke-width="1"/>
+          <text x="162" y="170" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#991B1B" text-anchor="middle">Redis</text>
+          <text x="162" y="180" font-family="DM Sans,sans-serif" font-size="7" fill="#F87171" text-anchor="middle">v7 · LRU Cache</text>
+
+          <!-- RabbitMQ -->
+          <rect x="212" y="158" width="88" height="28" rx="6"
+            fill="#FFF7ED" stroke="#FED7AA" stroke-width="1"/>
+          <text x="256" y="170" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#92400E" text-anchor="middle">RabbitMQ</text>
+          <text x="256" y="180" font-family="DM Sans,sans-serif" font-size="7" fill="#FB923C" text-anchor="middle">v3.12 · Task Queue</text>
+
+          <!-- Backend → Data tier arrows -->
+          <path d="M175,128 L175,150 L67,150 L67,158" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2" marker-end="url(#arr-slate)"/>
+          <path d="M175,128 L175,155 L162,155 L162,158" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2" marker-end="url(#arr-slate)"/>
+          <path d="M280,128 L280,150 L256,150 L256,158" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2" marker-end="url(#arr-slate)"/>
+
+          <!-- Worker → RabbitMQ -->
+          <path d="M280,128 L280,150" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+
+          <!-- ── SEALED SECRETS ── (small badge in demo ns) -->
+          <rect x="22" y="200" width="80" height="18" rx="4"
+            fill="rgba(124,58,237,0.08)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+          <text x="62" y="212" font-family="DM Sans,sans-serif" font-size="7" font-weight="600" fill="#7C3AED" text-anchor="middle">🔐 Sealed Secrets</text>
+
+          <!-- ── MONITORING NAMESPACE ── -->
+          <rect x="352" y="76" width="158" height="200" rx="8"
+            fill="rgba(237,233,254,0.4)" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <text x="360" y="92" font-family="DM Sans,sans-serif" font-size="8" font-weight="700"
+            fill="#4C1D95" letter-spacing="0.07em">monitoring namespace</text>
+
+          <!-- Prometheus -->
+          <rect x="360" y="98" width="102" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="411" y="110" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Prometheus</text>
+          <text x="411" y="119" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">Metrics scraping</text>
+
+          <!-- Grafana -->
+          <rect x="360" y="134" width="102" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="411" y="146" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Grafana</text>
+          <text x="411" y="155" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">Dashboards · /grafana</text>
+
+          <!-- Loki -->
+          <rect x="360" y="170" width="102" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="411" y="182" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Loki</text>
+          <text x="411" y="191" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">Log aggregation</text>
+
+          <!-- Alertmanager -->
+          <rect x="360" y="206" width="102" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="411" y="218" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Alertmanager</text>
+          <text x="411" y="227" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">Email · Slack alerts</text>
+
+          <!-- Metrics scrape: Backend → Prometheus (dashed purple) -->
+          <path d="M344,113 L360,113" stroke="#7C3AED" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-purple)"
+            class="flow-metrics"/>
+          <text x="352" y="109" font-family="DM Sans,sans-serif" font-size="6" fill="#7C3AED" text-anchor="middle">scrape</text>
+
+          <!-- Prometheus → Grafana -->
+          <path d="M411,124 L411,134" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2 2" marker-end="url(#arr-purple)"/>
+
+          <!-- Loki → Grafana (already connected above) -->
+          <path d="M411,160 L411,160" stroke="#7C3AED" stroke-width="1" stroke-dasharray="2 2"/>
+
+          <!-- Promtail label (pushes logs to Loki) -->
+          <rect x="360" y="242" width="102" height="20" rx="4"
+            fill="rgba(124,58,237,0.06)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+          <text x="411" y="255" font-family="DM Sans,sans-serif" font-size="7" font-weight="600" fill="#7C3AED" text-anchor="middle">Promtail DaemonSet</text>
+
+          <!-- ── ARGOCD NAMESPACE ── -->
+          <rect x="14" y="288" width="160" height="80" rx="8"
+            fill="rgba(254,243,199,0.5)" stroke="#D97706" stroke-width="1.5" stroke-dasharray="5 3"/>
+          <text x="22" y="304" font-family="DM Sans,sans-serif" font-size="8" font-weight="700"
+            fill="#78350F" letter-spacing="0.07em">argocd namespace</text>
+
+          <!-- ArgoCD node -->
+          <rect x="22" y="310" width="144" height="42" rx="6"
+            fill="white" stroke="#FDE68A" stroke-width="1.5"/>
+          <text x="94" y="326" font-family="DM Sans,sans-serif" font-size="9" font-weight="700" fill="#0F172A" text-anchor="middle">ArgoCD</text>
+          <text x="94" y="338" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B" text-anchor="middle">GitOps controller · Auto-sync</text>
+          <text x="94" y="347" font-family="DM Sans,sans-serif" font-size="7" fill="#D97706" text-anchor="middle">/argocd</text>
+
+          <!-- ArgoCD → K8s API (applies manifests) -->
+          <path d="M166,331 L210,331 L210,250 L200,250" stroke="#D97706" stroke-width="1.5"
+            stroke-dasharray="5 3" marker-end="url(#arr-amber)" class="flow-gitops"/>
+          <text x="200" y="287" font-family="DM Sans,sans-serif" font-size="6.5" fill="#D97706" text-anchor="middle">apply</text>
+
+          <!-- ── GITOPS LOOP (bottom external zone) ── -->
+          <!-- GitOps section background -->
+          <rect x="4" y="384" width="510" height="52" rx="8"
+            fill="rgba(248,250,252,0.8)" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="14" y="397" font-family="DM Sans,sans-serif" font-size="7.5" font-weight="700"
+            fill="#94A3B8" letter-spacing="0.08em">GITOPS CI/CD PIPELINE</text>
+
+          <!-- GitHub -->
+          <rect x="14" y="402" width="68" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="48" y="417" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">GitHub</text>
+
+          <!-- Arrow → Actions -->
+          <path d="M82,415 L98,415" stroke="#D97706" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-amber)" class="flow-gitops"/>
+
+          <!-- GitHub Actions -->
+          <rect x="98" y="402" width="90" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="143" y="412" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Actions CI/CD</text>
+          <text x="143" y="421" font-family="DM Sans,sans-serif" font-size="6.5" fill="#64748B" text-anchor="middle">Build · Test · Trivy scan</text>
+
+          <!-- Arrow → GHCR -->
+          <path d="M188,415 L204,415" stroke="#D97706" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-amber)" class="flow-gitops"/>
+
+          <!-- GHCR -->
+          <rect x="204" y="402" width="68" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="238" y="412" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">GHCR</text>
+          <text x="238" y="421" font-family="DM Sans,sans-serif" font-size="6.5" fill="#64748B" text-anchor="middle">ARM64 images</text>
+
+          <!-- Arrow → Manifest Update -->
+          <path d="M272,415 L288,415" stroke="#D97706" stroke-width="1.5"
+            stroke-dasharray="4 3" marker-end="url(#arr-amber)" class="flow-gitops"/>
+
+          <!-- Manifest Update -->
+          <rect x="288" y="402" width="90" height="26" rx="5" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+          <text x="333" y="412" font-family="DM Sans,sans-serif" font-size="8.5" font-weight="600" fill="#0F172A" text-anchor="middle">Update Manifests</text>
+          <text x="333" y="421" font-family="DM Sans,sans-serif" font-size="6.5" fill="#64748B" text-anchor="middle">Git commit image tag</text>
+
+          <!-- Arrow → ArgoCD detects diff -->
+          <path d="M378,415 L410,415 L410,384 L94,384 L94,370"
+            stroke="#D97706" stroke-width="1.5" stroke-dasharray="4 3"
+            marker-end="url(#arr-amber)" class="flow-gitops"/>
+          <text x="420" y="400" font-family="DM Sans,sans-serif" font-size="6.5" fill="#D97706" text-anchor="middle">detects</text>
+          <text x="420" y="408" font-family="DM Sans,sans-serif" font-size="6.5" fill="#D97706" text-anchor="middle">diff</text>
+
+          <!-- ── LEGEND ── -->
+          <g transform="translate(360, 292)">
+            <text x="0" y="8" font-family="DM Sans,sans-serif" font-size="7" font-weight="700"
+              fill="#94A3B8" letter-spacing="0.06em">LEGEND</text>
+            <!-- Traffic -->
+            <line x1="0" y1="18" x2="20" y2="18" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="24" y="21" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B">Traffic flow</text>
+            <!-- GitOps -->
+            <line x1="0" y1="32" x2="20" y2="32" stroke="#D97706" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="24" y="35" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B">GitOps sync</text>
+            <!-- Metrics -->
+            <line x1="0" y1="46" x2="20" y2="46" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="24" y="49" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B">Observability</text>
+            <!-- Internal -->
+            <line x1="0" y1="60" x2="20" y2="60" stroke="#94A3B8" stroke-width="1" stroke-dasharray="2 2"/>
+            <text x="24" y="63" font-family="DM Sans,sans-serif" font-size="7" fill="#64748B">Internal calls</text>
+          </g>
+        </svg>
+        <!-- ══ END SVG ══════════════════════════════════════ -->
+
+      </div><!-- diagram-card -->
+    </div><!-- diagram-wrap -->
+  </div><!-- hero-section -->
+</div><!-- container -->
+
+
+<!-- ══ METRICS STRIP ══════════════════════════════════════════ -->
+<div class="metrics-strip">
+  <div class="container">
+    <div class="metrics-grid">
+      <div class="metric-cell">
+        <div class="metric-num" id="mDeploys"><span class="unit">—</span></div>
+        <div class="metric-label">Total deployments</div>
+        <div class="metric-tag green" id="mDeploysTag">since launch</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num">25<span class="unit">+</span></div>
+        <div class="metric-label">Technologies running</div>
+        <div class="metric-tag blue">K8s · IaC · Observability · CI/CD</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num" id="mUptime"><span class="unit">—</span></div>
+        <div class="metric-label">Platform uptime</div>
+        <div class="metric-tag green">Self-healing K3s</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num">$0<span class="unit">/mo</span></div>
+        <div class="metric-label">Operating cost</div>
+        <div class="metric-tag amber">$144/mo AWS equivalent</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ LIVE HEALTH ════════════════════════════════════════════ -->
+<section class="section section-alt" id="health">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-eyebrow">Platform Health</div>
+      <div class="section-h2">Live Service Status</div>
+      <div class="section-sub">Real-time health checks pulled from <code style="font-family:var(--font-mono);font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:4px;">/api/health</code> — auto-refreshes every 30s</div>
+    </div>
+    <div class="health-grid" id="healthGrid">
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">⚡</div>
+          <span class="badge loading" id="h-api">checking</span>
+        </div>
+        <div class="hc-name">Backend API</div>
+        <div class="hc-desc">FastAPI · Python 3.11 · REST endpoints + Prometheus metrics + health checks</div>
+        <div class="hc-foot">3 replicas · ClusterIP :8000</div>
+      </div>
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">🗄️</div>
+          <span class="badge loading" id="h-pg">checking</span>
+        </div>
+        <div class="hc-name">PostgreSQL</div>
+        <div class="hc-desc">v15 StatefulSet · Persistent volume · Schema migrations · deployment history store</div>
+        <div class="hc-foot">1 pod · PVC /var/lib/postgresql</div>
+      </div>
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">⚡</div>
+          <span class="badge loading" id="h-redis">checking</span>
+        </div>
+        <div class="hc-name">Redis Cache</div>
+        <div class="hc-desc">v7 · LRU eviction policy · API response caching · 30s TTL on stats endpoint</div>
+        <div class="hc-foot">1 pod · ClusterIP :6379</div>
+      </div>
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">🐇</div>
+          <span class="badge healthy">healthy</span>
+        </div>
+        <div class="hc-name">RabbitMQ</div>
+        <div class="hc-desc">v3.12 · AMQP task queue · Worker consumes events async · management UI port-forwarded</div>
+        <div class="hc-foot">StatefulSet · ClusterIP :5672</div>
+      </div>
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">⚙️</div>
+          <span class="badge healthy">healthy</span>
+        </div>
+        <div class="hc-name">Worker</div>
+        <div class="hc-desc">Python consumer · RabbitMQ subscriber · Async event processing · connects to PostgreSQL</div>
+        <div class="hc-foot">1 pod · Event-driven</div>
+      </div>
+
+      <div class="health-card">
+        <div class="hc-top">
+          <div class="hc-icon">🔀</div>
+          <span class="badge healthy">healthy</span>
+        </div>
+        <div class="hc-name">Traefik Ingress</div>
+        <div class="hc-desc">Edge router · TLS termination via Let's Encrypt cert-manager · NodePort 30443 → Cloudflare</div>
+        <div class="hc-foot">kube-system · NodePort :30443</div>
+      </div>
+
+    </div><!-- health-grid -->
+  </div>
+</section>
+
+
+<!-- ══ GITOPS PIPELINE ════════════════════════════════════════ -->
+<section class="section" id="pipeline">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-eyebrow">CI/CD &amp; GitOps</div>
+      <div class="section-h2">From Push to Production</div>
+      <div class="section-sub">Every code push triggers a fully automated pipeline. Zero manual steps from commit to live cluster deployment.</div>
+    </div>
+
+    <div class="pipeline-wrap">
+      <div class="pipeline-subtitle">
+        Automated pipeline · avg deploy time: <strong id="avgDeploy">~90s</strong> end-to-end
+      </div>
+      <div class="pipeline-row">
+
+        <div class="pipe-step">
+          <div class="pipe-icon">👨‍💻</div>
+          <div class="pipe-name">Developer Push</div>
+          <div class="pipe-detail">git commit + push</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon active">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="pipe-name">GitHub Actions</div>
+          <div class="pipe-detail">lint · test · security</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon blue">🔍</div>
+          <div class="pipe-name">Trivy Scan</div>
+          <div class="pipe-detail">CVE scanning</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon green">📦</div>
+          <div class="pipe-name">Build + Push</div>
+          <div class="pipe-detail">ARM64 → GHCR</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon amber">✏️</div>
+          <div class="pipe-name">Update Manifests</div>
+          <div class="pipe-detail">image tag commit</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon purple">🔄</div>
+          <div class="pipe-name">ArgoCD Sync</div>
+          <div class="pipe-detail">detects diff → apply</div>
+        </div>
+        <div class="pipe-arrow"></div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon active">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="pipe-name">Live on Cluster</div>
+          <div class="pipe-detail">zero-downtime deploy</div>
+        </div>
+
+      </div><!-- pipeline-row -->
+
+      <div class="pipeline-return">
+        <span>GitOps feedback loop:</span>
+        <span class="ret-label">🔀 ArgoCD monitors Git</span>
+        <div class="ret-dash"></div>
+        <span class="ret-arrow">⟳</span>
+        <span class="ret-label">📊 Prometheus alerts</span>
+        <div class="ret-dash"></div>
+        <span class="ret-arrow">⟳</span>
+        <span class="ret-label">📧 Alertmanager notifies</span>
+        <div class="ret-dash"></div>
+        <span class="ret-arrow">⟳</span>
+        <span class="ret-label">🔁 Self-healing K3s</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ DEPLOYMENTS ════════════════════════════════════════════ -->
+<section class="section section-alt" id="deployments">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-eyebrow">Deployment History</div>
+      <div class="section-h2">Recent Deployments</div>
+      <div class="section-sub">Live data from the platform — every ArgoCD-triggered deploy is recorded here.</div>
+    </div>
+
+    <div class="deploy-wrap">
+      <div class="deploy-head">
+        <span>Service</span>
+        <span>Version</span>
+        <span>Status</span>
+        <span>Commit SHA</span>
+        <span>Duration</span>
+        <span>When</span>
+      </div>
+      <div id="deployBody">
+        <div class="deploy-empty">Loading deployment history…</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══ COST SECTION ═══════════════════════════════════════════ -->
+<section class="section cost-section">
+  <div class="container">
+    <div class="cost-grid">
+      <div>
+        <div class="cost-eyebrow">The Engineering Proof Point</div>
+        <div class="cost-h2">
+          Running a <span class="cost-zero">$144/mo</span><br>
+          platform for <span class="cost-zero">$0</span>
+        </div>
+        <div class="cost-desc">
+          By architecting exclusively on Oracle Cloud's Always-Free Tier — Ampere A1 ARM64 VM (4 cores, 24 GB RAM), Cloudflare's free CDN and WAF, and GitHub Actions — this platform runs at zero cost while demonstrating production-grade infrastructure that would cost serious money on AWS or GCP.
+        </div>
+        <div class="cost-talking-point">
+          "I built and operate a platform equivalent to <strong>$1,729/year of AWS spend at zero cost</strong>, by architecting purely on always-free infrastructure. In production I'd use EKS or GKE — the engineering decisions, runbooks, and GitOps patterns transfer directly."
+        </div>
+      </div>
+      <div>
+        <div class="cost-table">
+          <div class="cost-row">
+            <span class="cost-item">Compute (4 vCPU / 24 GB)</span>
+            <span class="cost-aws">$116/mo</span>
+            <span class="cost-ours">$0</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-item">Block storage 100 GB</span>
+            <span class="cost-aws">$8/mo</span>
+            <span class="cost-ours">$0</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-item">Load balancer</span>
+            <span class="cost-aws">$18/mo</span>
+            <span class="cost-ours">$0</span>
+          </div>
+          <div class="cost-row">
+            <span class="cost-item">CDN + WAF + DDoS</span>
+            <span class="cost-aws">$20+/mo</span>
+            <span class="cost-ours">$0</span>
+          </div>
+          <div class="cost-row total">
+            <span class="cost-item">Total equivalent AWS cost</span>
+            <span class="cost-aws">$144/mo · $1,729/yr</span>
+            <span class="cost-ours">$0 / mo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ TECH STACK ═════════════════════════════════════════════ -->
+<section class="section" id="stack">
+  <div class="container">
+    <div class="section-head">
+      <div class="section-eyebrow">Technology Capabilities</div>
+      <div class="section-h2">The Full Stack</div>
+      <div class="section-sub">25+ technologies — each one actually running in production, not on a resume bullet point.</div>
+    </div>
+
+    <div class="stack-grid">
+
+      <div class="stack-card">
+        <div class="stack-cat infra">☁ Infrastructure &amp; IaC</div>
+        <div class="stack-tags">
+          <span class="stack-tag">Oracle Cloud (OCI)</span>
+          <span class="stack-tag">Terraform</span>
+          <span class="stack-tag">ARM64 · Ampere A1</span>
+          <span class="stack-tag">Cloudflare CDN</span>
+          <span class="stack-tag">Cloudflare WAF</span>
+          <span class="stack-tag">Object Storage</span>
+        </div>
+        <div class="stack-proof">Terraform provisions all OCI resources: VCN, subnet, security groups, compute instance, and object storage bucket for backups. Everything is declarative and version-controlled.</div>
+      </div>
+
+      <div class="stack-card">
+        <div class="stack-cat k8s">⎈ Kubernetes &amp; Orchestration</div>
+        <div class="stack-tags">
+          <span class="stack-tag">K3s</span>
+          <span class="stack-tag">Helm</span>
+          <span class="stack-tag">Traefik Ingress</span>
+          <span class="stack-tag">cert-manager</span>
+          <span class="stack-tag">Network Policies</span>
+          <span class="stack-tag">RBAC</span>
+          <span class="stack-tag">Resource Quotas</span>
+        </div>
+        <div class="stack-proof">Multi-namespace cluster (demo, monitoring, argocd) with deny-all network policies, namespace-level resource quotas, and RBAC roles. Let's Encrypt TLS auto-renewal via cert-manager.</div>
+      </div>
+
+      <div class="stack-card">
+        <div class="stack-cat obs">📊 Observability</div>
+        <div class="stack-tags">
+          <span class="stack-tag">Prometheus</span>
+          <span class="stack-tag">Grafana</span>
+          <span class="stack-tag">Loki</span>
+          <span class="stack-tag">Promtail</span>
+          <span class="stack-tag">Alertmanager</span>
+          <span class="stack-tag">kube-state-metrics</span>
+          <span class="stack-tag">node-exporter</span>
+        </div>
+        <div class="stack-proof">Full observability stack via kube-prometheus-stack Helm chart. Custom alert rules fire to email and Slack. Grafana dashboards for cluster, app metrics, and PostgreSQL.</div>
+      </div>
+
+      <div class="stack-card">
+        <div class="stack-cat cicd">🔄 CI/CD &amp; GitOps</div>
+        <div class="stack-tags">
+          <span class="stack-tag">ArgoCD</span>
+          <span class="stack-tag">GitHub Actions</span>
+          <span class="stack-tag">GHCR</span>
+          <span class="stack-tag">Trivy</span>
+          <span class="stack-tag">Pre-commit hooks</span>
+          <span class="stack-tag">Semantic versioning</span>
+        </div>
+        <div class="stack-proof">Push-to-deploy: Actions builds ARM64 images, runs Trivy CVE scan, updates image tags in Git, ArgoCD auto-syncs to cluster in ~90 seconds total.</div>
+      </div>
+
+      <div class="stack-card">
+        <div class="stack-cat sec">🔐 Security</div>
+        <div class="stack-tags">
+          <span class="stack-tag">Sealed Secrets</span>
+          <span class="stack-tag">Network Policies</span>
+          <span class="stack-tag">Cloudflare WAF</span>
+          <span class="stack-tag">UFW / iptables</span>
+          <span class="stack-tag">Trivy scanning</span>
+          <span class="stack-tag">RBAC</span>
+        </div>
+        <div class="stack-proof">Secrets encrypted via Kubeseal before committing to Git. Namespace-level deny-all NetworkPolicies with explicit allowlist. Host-level UFW firewall. Cloudflare WAF + rate limiting in front.</div>
+      </div>
+
+      <div class="stack-card">
+        <div class="stack-cat data">🗄️ Data &amp; Applications</div>
+        <div class="stack-tags">
+          <span class="stack-tag">FastAPI</span>
+          <span class="stack-tag">Python 3.11</span>
+          <span class="stack-tag">PostgreSQL 15</span>
+          <span class="stack-tag">Redis 7</span>
+          <span class="stack-tag">RabbitMQ 3.12</span>
+          <span class="stack-tag">nginx</span>
+          <span class="stack-tag">asyncpg</span>
+        </div>
+        <div class="stack-proof">Microservices architecture: stateless API (3 replicas) + async worker (event-driven) + StatefulSet for PostgreSQL. Redis caches API responses. RabbitMQ decouples the worker queue.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ FOOTER ═════════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-wrap">
+      <div class="footer-left">
+        <div class="footer-name">Nupur Shah</div>
+        <div class="footer-tagline">DevOps · Platform Engineering · Cloud Infrastructure · Singapore &amp; Malaysia market</div>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/NupurShaha/devops-platform-demo" target="_blank" class="footer-link">GitHub</a>
+        <a href="https://linkedin.com/in/nupur-shaha" target="_blank" class="footer-link">LinkedIn</a>
+        <a href="mailto:shahns079@gmail.com" class="footer-link">shahns079@gmail.com</a>
+        <a href="/api/docs" target="_blank" class="footer-link">API Docs</a>
+        <a href="/grafana" target="_blank" class="footer-link">Grafana</a>
+        <a href="/argocd" target="_blank" class="footer-link">ArgoCD</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══ JAVASCRIPT ═════════════════════════════════════════════ -->
+<script>
+  const API = '/api';
+
+  // ── Utilities ──────────────────────────────────────────────
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60)  return s + 's ago';
+    const m = Math.floor(s / 60);
+    if (m < 60)  return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24)  return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  function fmtUptime(sec) {
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (d > 0) return d + 'd ' + h + 'h';
+    if (h > 0) return h + 'h ' + m + 'm';
+    return m + 'm';
+  }
+
+  function setBadge(el, status) {
+    if (!el) return;
+    const s = (status || 'loading').toLowerCase();
+    const labels = {
+      healthy: '● Healthy', degraded: '⚠ Degraded', down: '✕ Down',
+      unhealthy: '✕ Unhealthy', unavailable: '— Unavailable', loading: '· Checking'
+    };
+    el.className = 'badge ' + (labels[s] ? s : 'loading');
+    el.textContent = labels[s] || '· Checking';
+  }
+
+  // ── Health ─────────────────────────────────────────────────
+  async function loadHealth() {
+    try {
+      const r = await fetch(API + '/health');
+      const d = await r.json();
+      const pill = document.getElementById('navStatus');
+      const txt  = document.getElementById('navStatusText');
+
+      if (d.status === 'healthy') {
+        pill.className = 'status-pill';
+        txt.textContent = 'All systems operational';
+      } else {
+        pill.className = 'status-pill degraded';
+        txt.textContent = 'Platform degraded';
+      }
+
+      setBadge(document.getElementById('h-api'),   d.checks?.api);
+      setBadge(document.getElementById('h-pg'),    d.checks?.postgresql);
+      setBadge(document.getElementById('h-redis'), d.checks?.redis);
+
+    } catch (e) {
+      const pill = document.getElementById('navStatus');
+      if (pill) { pill.className = 'status-pill down'; }
+      const txt = document.getElementById('navStatusText');
+      if (txt) txt.textContent = 'Cannot reach API';
+      ['h-api','h-pg','h-redis'].forEach(id => setBadge(document.getElementById(id), 'down'));
+    }
+  }
+
+  // ── Stats ──────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const r = await fetch(API + '/stats');
+      const d = await r.json();
+
+      const mD = document.getElementById('mDeploys');
+      if (mD) mD.innerHTML = d.total_deployments + '<span class="unit"> deploys</span>';
+
+      const mDTag = document.getElementById('mDeploysTag');
+      if (mDTag) mDTag.textContent = d.successful_deployments + ' successful · ' + (d.services_count || 6) + ' services';
+
+      const mU = document.getElementById('mUptime');
+      if (mU && d.uptime_seconds) mU.innerHTML = fmtUptime(d.uptime_seconds) + '<span class="unit"> up</span>';
+
+      const avgEl = document.getElementById('avgDeploy');
+      if (avgEl && d.avg_deploy_duration_seconds) avgEl.textContent = d.avg_deploy_duration_seconds + 's';
+
+    } catch (e) {
+      // keep defaults
+    }
+  }
+
+  // ── Deployments ────────────────────────────────────────────
+  async function loadDeployments() {
+    const body = document.getElementById('deployBody');
+    if (!body) return;
+    try {
+      const r = await fetch(API + '/deployments');
+      const rows = await r.json();
+
+      if (!rows.length) {
+        body.innerHTML = '<div class="deploy-empty">No deployments recorded yet.</div>';
+        return;
+      }
+
+      body.innerHTML = rows.slice(0, 12).map(d => {
+        const status = d.status || 'unknown';
+        const badgeClass = status === 'success' ? 'healthy' : status === 'failed' ? 'down' : 'degraded';
+        const sha = d.commit_sha ? `<span class="deploy-sha">${d.commit_sha.substring(0,7)}</span>` : '<span style="color:var(--text-4)">—</span>';
+        return `
+          <div class="deploy-row">
+            <span class="deploy-service">${d.service_name}</span>
+            <span class="deploy-version">${d.version || '—'}</span>
+            <span><span class="badge ${badgeClass}">${status}</span></span>
+            <span>${sha}</span>
+            <span class="deploy-dur">${d.duration_seconds || '—'}s</span>
+            <span class="deploy-time">${timeAgo(d.deployed_at)}</span>
+          </div>`;
+      }).join('');
+
+    } catch (e) {
+      body.innerHTML = '<div class="deploy-empty">Could not load deployment history — API unreachable.</div>';
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────────
+  loadHealth();
+  loadStats();
+  loadDeployments();
+  setInterval(loadHealth, 30000);
+  setInterval(loadStats,  30000);
+</script>
+
 </body>
 </html>
